@@ -1,0 +1,238 @@
+---
+title: "22055803-INST0065q2"
+date: "2023-04-15"
+output: html_document
+
+# bibliography style; see: https://github.com/citation-style-language/styles
+
+csl: 'https://raw.githubusercontent.com/citation-style-language/styles/master/apa-6th-edition.csl'
+
+# for other examples of references
+# see https://rmarkdown.rstudio.com/authoring_bibliographies_and_citation.html
+
+references:
+- id: openplaques2023
+  title: openplaques.org database
+  author:
+  - literal: openplaques.org
+  URL: 'https://openplaques.org/data/'
+  type: webpage
+  issued:
+    year: 2023
+
+- id: r-error-messages2023
+  title: r-error-messages
+  author:
+  - literal: programmingr.com
+  URL: https://www.programmingr.com/r-error-messages/error-in-contrib-urlrepos-source-r-markdown/#
+  type: webpage
+  issued:
+    year: 2023  
+    
+- id: open-plaques-diversity2022
+  title: openheritage/open-plaques-diversity
+  author:
+  - literal: jnicho02 from GitHub
+  URL: https://github.com/openheritage/open-plaques-diversity#
+  type: webpage
+  issued:
+    year: 2022   
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# INST0065 Assessment 2
+
+## Data
+
+22055803;
+INST0065: Data Visualization and GIS 22/23;
+Dr Oliver Duke-Williams;
+The visualizations and commentaries on the gender issues of open plaques database;
+1944 words;
+
+The data for this markdown file are taken from [https://openplaques.org/data/](openplaques.org) (@openplaques2023)
+
+see also (@r-error-messages2023)
+
+```{r load-data, include=FALSE}
+# include=FALSE means that code will run, but results will not be shown
+# NB This section uses read_csv(), which is included in tidyverse
+# Please adjust the working directory when assessing this work. Thank you!
+
+plaques <- read_csv("https://s3.eu-west-2.amazonaws.com/openplaques/open-plaques-gb-2021-05-14.csv")
+```
+
+
+```{r Total Number of the lead subject types}
+#Prepare the working directory and the data
+plaques <- read_csv("https://s3.eu-west-2.amazonaws.com/openplaques/open-plaques-gb-2021-05-14.csv")
+library(ggplot2)
+library(tidyverse)
+
+#Visualize the data, set the color, title, and labels.
+ggplot(data=plaques) + 
+geom_bar(mapping=aes(x=lead_subject_type, fill=lead_subject_type)) +
+scale_fill_discrete() + ggtitle("A. Total number of the lead subject types") + theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + labs(x = "Lead subject types", y = "Number", fill = "Lead subject types")
+```
+```{r Propotion of the male, female, and inanimate subjects}
+#Prepare the working directory and the data
+plaques <- read_csv("https://s3.eu-west-2.amazonaws.com/openplaques/open-plaques-gb-2021-05-14.csv")
+library(ggplot2)
+library(tidyverse)
+
+# Delete two rows containing abnormal data
+newplaques <- plaques %>%
+  filter(!(row_number() %in% c(8267, 13718)))
+
+#Calculate the number of male, female, and inanimate subjects
+sum_of_male_subjects <- sum(newplaques$number_of_male_subjects, na.rm = TRUE)
+sum_of_female_subjects <- sum(newplaques$number_of_female_subjects, na.rm = TRUE)
+sum_of_inanimate_subjects <- sum(newplaques$number_of_inanimate_subjects, na.rm = TRUE)
+
+#Prepare the data set
+df <- data.frame(
+  category = c("Male", "Female", "Inanimate"),
+  count = c(sum_of_male_subjects, sum_of_female_subjects, sum_of_inanimate_subjects)
+)
+
+#Visualize the data, set the shape, color, title, the format of the title, and the labels
+ggplot(df, aes(x="", y=count, fill=category)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)  +
+  scale_fill_discrete()  + ggtitle("B. Proportion of the male, female, and inanimate subjects") +
+ theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + labs(x = "", y = "", fill = "Categories")
+```
+
+
+```{r Propotion of the lead subject types}
+#Prepare the working directory and the data
+plaques <- read_csv("https://s3.eu-west-2.amazonaws.com/openplaques/open-plaques-gb-2021-05-14.csv")
+library(ggplot2)
+library(tidyverse)
+
+#Prepare the dataset
+data <- plaques %>%
+  count(lead_subject_type)
+
+#Visualize the data, set the shape, color, title, the format of the title, and the labels
+ggplot(data, aes(x = "", y = n, fill = lead_subject_type)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +
+  scale_fill_discrete() + ggtitle("C. Proportion of the lead subject types") + theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + labs(x = "", y = "" , fill = "Lead subject types")
+```
+```{r The relationship between male/female subjects and colours}
+#Prepare the working directory and the data
+plaques <- read_csv("https://s3.eu-west-2.amazonaws.com/openplaques/open-plaques-gb-2021-05-14.csv")
+library(ggplot2)
+library(tidyverse)
+
+#Visualize the data with points, set the labels, aspect ratio, position and size of the "colours", title, and the format of the title
+ggplot(plaques, aes(x = number_of_male_subjects, y = number_of_female_subjects, color = colour)) + 
+  geom_point() + scale_color_discrete() +
+  labs(x = "Number of Male Subjects", y = "Number of Female Subjects", color = "Colours") + 
+  theme(aspect.ratio = 1/2, legend.position = "bottom", legend.key.size = unit(0.3, "mm")) + ggtitle("D. The relationship between male/female subjects and colour") +  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
+```
+
+```{r The relationship between lead subject types and cities}
+#Prepare the working directory and the data
+plaques <- read_csv("https://s3.eu-west-2.amazonaws.com/openplaques/open-plaques-gb-2021-05-14.csv")
+library(ggplot2)
+library(tidyverse)
+
+#Filter the data and prepare the dataset
+data1 <- plaques %>%
+  filter(area %in% c("Belfast", "Birmingham", "Cardiff", "London", "Edinburgh")) %>%
+  select(area, lead_subject_type) %>%
+  group_by(area, lead_subject_type) %>%
+  summarise(count = n())
+
+#Visualize the data, set the format(dodge), labels, title, and the format of the title
+ggplot(data1, aes(x = area, y = count, fill = lead_subject_type)) +
+  geom_col(position = "dodge") +
+  labs(x = "Cities", y = "Number", fill = "Lead subject types") +
+  scale_fill_discrete() +
+  ggtitle("E. The relationship between lead subject types and area") + theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
+```
+
+```{r The relationship between lead subject types and lead subject birth years}
+#Prepare the working directory and the data
+plaques <- read_csv("https://s3.eu-west-2.amazonaws.com/openplaques/open-plaques-gb-2021-05-14.csv")
+library(ggplot2)
+library(tidyverse)
+
+#Select the rows that this visualization needs
+data2 <- plaques%>% 
+  select(lead_subject_born_in, lead_subject_type)
+
+#Delete the rows that do not have the data of lead_subject_born_in, and transfer the years into centuries
+data3 <- data2 %>% 
+  filter(!is.na(lead_subject_born_in)) %>%
+  mutate(century = floor(lead_subject_born_in/100)+1)
+
+#Group the data for this particular visualization
+data4 <- data3 %>% 
+  group_by(century, lead_subject_type) %>% 
+  summarize(count = n())
+
+#Visualize the data, set the color, title, the format of the title, and the labels
+ggplot(data4, aes(x = century, y = count, fill = lead_subject_type)) +
+  geom_col(position = "dodge") + scale_fill_discrete() + ggtitle("F. The relationship between lead subject types and centuries") + theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + labs(x = "Centuries", y = "Number" , fill = "Lead subject types")
+```
+
+Commentary part(1944 words):
+
+A.	Introduction
+
+The original .CSV file from open plaques covers a large number of plaques from the UK, along with a long list of their characteristics. It provides very different aspects of data with 27 columns, which allows people to analyse various topics such as gender, positions, and even language, etc. The data is also presented in different types. It not only contains the number (e.g., “number_of_subjects”), words (“language”), phrases (e.g., “lead_subject_roles”), URLs (e.g., “main_photo”), and sentences (e.g., “inscription”), which brings a lot of decisions to make when choosing the models of visualizations. The different types of data can also be quite helpful for developing a dynamic website. However, I also found lots of data is missing (e.g., erected row) or mistaken in this .CSV file so it needs to be considered whether these missing rows should be involved in data visualizations (data cleaning). Some data like the erected year, the id of lead subject, and the Wikipedia website of lead subject may not exist. However, in some places, I found that in some aspects this .CSV file is negligent and sloppy. I sometimes feel it is quite unacceptable for an official database file. For example, in row 11610, most of its data is in a mess. “openplaques:subject:id=3318” even appears in the column that should display the number of male subjects. 
+
+B.	Methods
+
+This .CSV file involves many topics available for visualizations. Different languages and the number of open plaques can be used for analysing how local languages were preserved and applied in the cultural heritage sector. The data on latitude and longitude offers chances to visualize the number of open plaques in the real map of the U.K. However, the gender diversity topic is still the most attractive one in this file. Firstly, there are four columns directly relevant to the gender issue: “number_of_male_subjects”, “number_of_female_subjects”, “lead_subject_sex”, and “lead_subject_type”. Then, the data in these columns is either word or number, which makes the visualization process much easier. It is difficult to visualize the columns containing sentences and URLs by R studio only. Thirdly, the data in these columns is relatively complete. Besides, there are also many other columns that may potentially be relevant to the gender diversity topic such as “area”, “erected”, “lead_subject_born_in”, and “lead_subject_roles”, etc. 
+
+This topic is not completely unknown to the public. According to research at GitHub, there is a 6:1 imbalance between male and female on open plaques (@open-plaques-diversity2022). Therefore, I made six visualizations attempting to discuss gender issues on open plaques. The first three visualizations explore gender issues simply by the number of subjects. In visualization A, the column of “lead_subject_type” is used as items in the x-axis. The y-axis will be automatically counted. This bar chart aims to present the specific number of each lead subject type. 
+
+Visualization C is a supplement to visualization A. It transformed the bar chart into the pie chart by “coord_polar“ in ggplot, aiming to emphasize the proportion of each lead subject type. Visualization C also filters the data by “count(lead_subject_type)” to calculate how many times each lead subject type appears, in order to prepare the dataset for further visualization.
+I decided to keep missing data in visualization A and visualization C because their number is large enough to affect the outcome. It will be explained later in the “Results” section.
+
+As for visualization B, its aim is similar to visualization C, which is to display the proportion of each category of subject. However, it is based on a completely different dataset, which is the data in these columns: “number_of_male_subjects”, “number_of_female_subjects”, and “number_of_inanimate_subjects”. Since the data in these columns is the number instead of word, I used the “sum” to calculate the summation of each column. Then a new data frame with the summation of each column and the names of three columns was established. However, I also noticed that the data in some rows does not display correctly and sometimes is even completely missing, like the rows 3430, 11464, 11668, 11610, 14079, etc. Besides, the data in the “number_of_inanimate_subjects” column and row 8267/13718 is 5035/22843, which is very suspicious. Thus, I used the “filter” to delete the two rows with abnormal data. The “na.rm = TRUE” was also applied to clean the missing data, though it is not necessary since the “sum” will count the empty fields as “0”. 
+
+The next three visualizations all have a common purpose, which is to explore the relationship between the lead subject types and the data in another column. 
+
+Visualization D attempts to figure out whether there is a connection between the subject colour and gender of this subject. Although I am not sure this sort of connection exists, it is worth trying, especially when the “colour” column is relatively complete with 31 sorts of colour. The code is also quite simple. I respectively used the data in the “Number of Male Subjects” and “Number of Female Subjects” columns as the x-axis and y-axis. The “colour” column can be applied directly to fill the colour for this scatter plot, in order to demonstrate how many times each colour appears in male and female subjects.
+
+In visualization E, the topic has changed to how lead subject types of open plaques changed by area. Since there are too many cities in the “area” column that cannot be fully displayed in the x-axis, I chose five representative ones in the U.K: London, the capital of England, Edinburgh, the capital of Scotland, Cardiff, the capital of Wales, Birmingham, a big city in middle England, and Belfast, the capital of Northern Ireland. So, in the first step, I filtered the data of these five cities from the original database. Then, I used the filtered “area” column to present the number of lead subject types in each city, hoping that this visualization can largely reveal the regional variations in the perspective of lead subject types of open plaques.
+
+The last visualization attempts to find out how lead subject types of open plaques changed over time. I first selected the “lead_subject_born_in” and “lead_subject_type” columns as the primary datasets for this visualization. The reason why I chose the “lead_subject_born_in” column, instead of the “lead_subject_died_in” column is that there is too much data missing in the “lead_subject_died_in” column. This reason also contributes to the fact that I cannot use a calculation to reach the median or average number of the data in the “lead_subject_born_in” column and the “lead_subject_died_in” column”, which may better represent the age of certain subject. In the next step, I removed the missing data in the “lead_subject_born_in” column, which also largely exists. Since there are too many years in the “lead_subject_born_in” column that cannot be fully displayed in the x-axis, I then transformed the specific year in the “lead_subject_born_in” column to the century it sets, using the “mutate”. Lastly, I grouped the data that was filtered and transformed. The “century” data is used as x-axis to demonstrate the number of each lead subject type in each century. Thus, the changes over time should be pretty straightforward. 
+
+C.	Results
+
+From visualization A and C, the results obviously show that the lead male subject has a much larger number than the lead female subjects: approximately 8,000 VS about 1,200. About 50 per cent of the lead subjects of open-plaques are male, which is over 6 times more than women. The number of lead female objects is even less than the place, which is over 2,000. There are also over 3,000 fields of data that are empty, which is the second largest proportion. If these fields of data can be largely added to one lead subject type, the overall proportion can be changed dramatically. The lead animal subjects, as expected, are the fewest, whose proportion is prominently lower than others. 
+
+From visualization B, it can be seen that if calculating those males subject that are not lead, its proportion can be even higher, which is nearly 70 per cent. The proportion of female subjects, on the other hand, is similar to visualization C. These results may demonstrate that many open plaques with lead inanimate subjects also have some male subjects.
+
+Overall, from visualization A to C, it is clear that the gender bias in the subjects of open plaques is self-evident. It is possible that due to many unfair social norms especially in the past, renowned women were fewer than men. However, should it be that different? 
+
+The data of visualization D is relatively even except for the two points respectively in the top of the x-axis and y-axis. I also noticed that the green points are more female-oriented. However, it is really hard to identify if there is a connection between colour and the sex of subjects.
+
+Visualization E shows that the lead subjects in all these five cities have both similarities and differences. The number of male lead subjects is always overwhelmingly larger than others. Compared with the model in Edinburgh and London, the situation in Birmingham is slightly different. In London and Edinburgh, the number of female lead subjects is larger than the place. However, in Birmingham, the proportion of female lead subjects is especially low, even significantly lower than the place, which may indicate the likelihood that the impact of the area on each lead subject type.
+
+In visualization F, there are many discoveries. Firstly, the open plaques cover the lead subjects from the 2nd century to the 21st century, a very wide time span. The subjects from the 2nd century can be dated back to the Roman age. Secondly, a large number of lead subjects of open plaques are from the 18th century, the 19th century, and the 20th century. These three centuries are also the most glorious in the history of the UK. Thirdly, the proportion of female lead subjects has increased dramatically since the 18th century, which well matches the development of women’s rights. After the 18th century, there is still some minor improvement. Since the 16th century, the proportion of lead subjects on the place is generally decreasing. Most of lead subjects on the group and thing appeared only after the 19th century, which may be relevant to many social movements in that time period. 
+
+D.  Conclusion
+
+The specific findings have been clarified in section C. In this section, firstly I will conclude the findings directly relevant to the gender issues of open plaques concisely. 
+
+Male lead subjects are dominant in number and proportion. Although from the 18th century, the number and proportion of female lead subjects saw a significant improvement, the position is still quite imbalanced. This gender issue can be different depending on the area. In London and Edinburgh, the situation seems to be better than in Birmingham.
+
+There are also many defects in these visualizations. Sometimes, the data with a small number cannot be seen clearly. In visualization C, it is hard to identify the proportion of the lead subject type on the animal. In visualization E, because London has too many plaques, the y-axis is largely extended, which causes the data on other cities like Belfast and Cardiff with fewer open plaques to be difficult to identify. Visualization F has a similar story. Besides, I am not very satisfied with the results of visualization E because it is unsure whether the difference between Birmingham and London/Edinburgh is a norm or just a coincidence. If possible, I would expect visualizations of each city in middle England. For visualization D, more research may be required before reaching any conclusion.
+
+Since this .CSV file provides specific information on the positions of open plaques, I also hoped that the map of the UK can be added to this visualization project and bring more interactions with audiences.
+
+
+<!-- see https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html -->
+
+# Bibliography
